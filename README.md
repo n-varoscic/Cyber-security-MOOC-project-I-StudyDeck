@@ -144,9 +144,9 @@ This section describes the 5 intentional vulnerabilities and how to test them.
 
 Users can access other users' decks by modifying the deck ID in the URL, bypassing authorization checks.
 
-**Flaw 1**: No ownership validation in `view_deck()` function - https://github.com/n-varoscic/Cyber-security-MOOC-project-I-StudyDeck/blob/9292f6a52da02520764ef6507e6c722903221c17/decks/views.py#L147
+**Flaw 1**: No ownership validation in `view_deck()` function https://github.com/n-varoscic/Cyber-security-MOOC-project-I-StudyDeck/blob/9292f6a52da02520764ef6507e6c722903221c17/decks/views.py#L147
 
-**Fix 1**: Check ownership with `get_object_or_404(Deck, id=deck_id, owner=request.user)` - https://github.com/n-varoscic/Cyber-security-MOOC-project-I-StudyDeck/blob/9292f6a52da02520764ef6507e6c722903221c17/decks/views.py#L150
+**Fix 1**: Check ownership with `get_object_or_404(Deck, id=deck_id, owner=request.user)` https://github.com/n-varoscic/Cyber-security-MOOC-project-I-StudyDeck/blob/9292f6a52da02520764ef6507e6c722903221c17/decks/views.py#L150
 
 **Steps to test the flaw**:
 1. Login as `alice` (password: `redqueen`)
@@ -214,9 +214,9 @@ You can generate a new key with: `python -c "from cryptography.fernet import Fer
 
 Search functionality uses unsafe string concatenation with user input in raw SQL queries.
 
-**Flaw 3**: Raw SQL with unsanitized user input - https://github.com/n-varoscic/Cyber-security-MOOC-project-I-StudyDeck/blob/9292f6a52da02520764ef6507e6c722903221c17/decks/views.py#L262
+**Flaw 3**: Raw SQL with unsanitized user input https://github.com/n-varoscic/Cyber-security-MOOC-project-I-StudyDeck/blob/9292f6a52da02520764ef6507e6c722903221c17/decks/views.py#L262
 
-**Fix 3**: Use Django ORM or parameterized queries - https://github.com/n-varoscic/Cyber-security-MOOC-project-I-StudyDeck/blob/9292f6a52da02520764ef6507e6c722903221c17/decks/views.py#L273
+**Fix 3**: Use Django ORM or parameterized queries https://github.com/n-varoscic/Cyber-security-MOOC-project-I-StudyDeck/blob/9292f6a52da02520764ef6507e6c722903221c17/decks/views.py#L273
 
 **Steps to test the flaw**:
 1. Go to Search page (`/search/`)
@@ -237,9 +237,9 @@ Search functionality uses unsafe string concatenation with user input in raw SQL
 
 Django settings expose sensitive information through debug mode and hard-coded secrets.
 
-**Flaw 4**: `DEBUG=True`, `ALLOWED_HOSTS=['*']`, hardcoded `SECRET_KEY` - https://github.com/n-varoscic/Cyber-security-MOOC-project-I-StudyDeck/blob/9292f6a52da02520764ef6507e6c722903221c17/studydeck/settings.py#L15
+**Flaw 4**: `DEBUG=True`, `ALLOWED_HOSTS=['*']`, hardcoded `SECRET_KEY` https://github.com/n-varoscic/Cyber-security-MOOC-project-I-StudyDeck/blob/9292f6a52da02520764ef6507e6c722903221c17/studydeck/settings.py#L15
 
-**Fix 4**: Load configuration from environment variables using `.env` file - https://github.com/n-varoscic/Cyber-security-MOOC-project-I-StudyDeck/blob/9292f6a52da02520764ef6507e6c722903221c17/studydeck/settings.py#L20
+**Fix 4**: Load configuration from environment variables using `.env` file https://github.com/n-varoscic/Cyber-security-MOOC-project-I-StudyDeck/blob/9292f6a52da02520764ef6507e6c722903221c17/studydeck/settings.py#L20
 
 **Steps to test the flaw**:
 1. Go to a non-existent page: `http://localhost:8000/invalid/`
@@ -260,9 +260,9 @@ Django settings expose sensitive information through debug mode and hard-coded s
 
 Failed login attempts are not logged, making brute force attacks undetectable.
 
-**Flaw 5**: No logging in `login_view()` for failed authentication attempts - https://github.com/n-varoscic/Cyber-security-MOOC-project-I-StudyDeck/blob/9292f6a52da02520764ef6507e6c722903221c17/decks/views.py#L45
+**Flaw 5**: No logging in `login_view()` for failed authentication attempts https://github.com/n-varoscic/Cyber-security-MOOC-project-I-StudyDeck/blob/9292f6a52da02520764ef6507e6c722903221c17/decks/views.py#L45
 
-**Fix 5**: Log failed login attempts with `logger.warning()` - https://github.com/n-varoscic/Cyber-security-MOOC-project-I-StudyDeck/blob/9292f6a52da02520764ef6507e6c722903221c17/decks/views.py#L51
+**Fix 5**: Log failed login attempts with `logger.warning()` https://github.com/n-varoscic/Cyber-security-MOOC-project-I-StudyDeck/blob/9292f6a52da02520764ef6507e6c722903221c17/decks/views.py#L51
 
 **Steps to test the flaw**:
 1. Go to login page
