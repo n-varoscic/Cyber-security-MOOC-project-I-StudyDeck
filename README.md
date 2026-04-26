@@ -122,15 +122,17 @@ The application will be available at `http://localhost:8000/`
 
 ### Creating Demo Users
 
-You can create demo users through the web interface or use existing user credentials to log in: 
+You can create demo users through the web interface or use existing user credentials to log in:
 
-Username: alice
-Password: redqueen
-Email: alice@gmail.com
+**User 1:**
+- Username: `alice`
+- Password: `redqueen`
+- Email: `alice@gmail.com`
 
-Username: bob
-Password: squarepants
-Email: bob@gmail.com
+**User 2:**
+- Username: `bob`
+- Password: `squarepants`
+- Email: `bob@gmail.com`
 
 ---
 
@@ -142,9 +144,9 @@ This section describes the 5 intentional vulnerabilities and how to test them.
 
 Users can access other users' decks by modifying the deck ID in the URL, bypassing authorization checks.
 
-**Flaw 1**: [decks/views.py](decks/views.py#L144) - No ownership validation in `view_deck()` function
+**Flaw 1**: No ownership validation in `view_deck()` function - https://github.com/n-varoscic/Cyber-security-MOOC-project-I-StudyDeck/blob/9292f6a52da02520764ef6507e6c722903221c17/decks/views.py#L147
 
-**Fix 1**: [decks/views.py](decks/views.py#L149) - Check ownership with `get_object_or_404(Deck, id=deck_id, owner=request.user)`
+**Fix 1**: Check ownership with `get_object_or_404(Deck, id=deck_id, owner=request.user)` - https://github.com/n-varoscic/Cyber-security-MOOC-project-I-StudyDeck/blob/9292f6a52da02520764ef6507e6c722903221c17/decks/views.py#L150
 
 **Steps to test the flaw**:
 1. Login as `alice` (password: `redqueen`)
@@ -165,9 +167,30 @@ Users can access other users' decks by modifying the deck ID in the URL, bypassi
 
 Sensitive user notes are stored in plaintext in the database without any encryption.
 
-**Flaw 2**: [decks/models.py](decks/models.py#L14) - `sensitive_note` field stores data unencrypted
+**Flaw 2**: `sensitive_note` field stores data unencrypted 
+- https://github.com/n-varoscic/Cyber-security-MOOC-project-I-StudyDeck/blob/9292f6a52da02520764ef6507e6c722903221c17/decks/models.py#L16
+- https://github.com/n-varoscic/Cyber-security-MOOC-project-I-StudyDeck/blob/9292f6a52da02520764ef6507e6c722903221c17/decks/forms.py#L19
+- https://github.com/n-varoscic/Cyber-security-MOOC-project-I-StudyDeck/blob/9292f6a52da02520764ef6507e6c722903221c17/decks/forms.py#L48
+- https://github.com/n-varoscic/Cyber-security-MOOC-project-I-StudyDeck/blob/9292f6a52da02520764ef6507e6c722903221c17/decks/forms.py#L61
 
-**Fix 2**: [decks/models.py](decks/models.py#L17) - Use `BinaryField` with encryption via Fernet
+**Fix 2**: Use `BinaryField` with encryption via Fernet 
+- https://github.com/n-varoscic/Cyber-security-MOOC-project-I-StudyDeck/blob/9292f6a52da02520764ef6507e6c722903221c17/decks/models.py#L19
+- https://github.com/n-varoscic/Cyber-security-MOOC-project-I-StudyDeck/blob/9292f6a52da02520764ef6507e6c722903221c17/decks/forms.py#L26
+- https://github.com/n-varoscic/Cyber-security-MOOC-project-I-StudyDeck/blob/9292f6a52da02520764ef6507e6c722903221c17/decks/forms.py#L35
+- https://github.com/n-varoscic/Cyber-security-MOOC-project-I-StudyDeck/blob/9292f6a52da02520764ef6507e6c722903221c17/decks/forms.py#L46
+- https://github.com/n-varoscic/Cyber-security-MOOC-project-I-StudyDeck/blob/9292f6a52da02520764ef6507e6c722903221c17/decks/forms.py#L55
+
+**Note on FERNET_KEY**: The encryption key is now loaded from the `FERNET_KEY` environment variable for security. For testing the fix, set this variable:
+
+```bash
+# macOS/Linux
+export FERNET_KEY='YOUR_BASE64_ENCODED_KEY_HERE'
+
+# Windows (PowerShell)
+$env:FERNET_KEY='YOUR_BASE64_ENCODED_KEY_HERE'
+```
+
+You can generate a new key with: `python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key())"`
 
 **Steps to test the flaw**:
 1. Login and go to Profile page
@@ -177,12 +200,13 @@ Sensitive user notes are stored in plaintext in the database without any encrypt
 5. **Result**: All sensitive notes visible in plaintext
 
 **Steps to test the fix**:
-1. Uncomment the fix 2 code
-2. Create a new migration: `python manage.py makemigrations`
-3. Apply migration: `python manage.py migrate`
-4. Login and add a new sensitive note
-5. Check the database in the terminal with `sqlite3 db.sqlite3` and query `SELECT sensitive_note FROM decks_profile;`
-6. **Result**: Sensitive note is now stored as encrypted binary data
+1. Generate and set the FERNET_KEY environment variable (see note above)
+2. Uncomment the fix 2 code
+3. Create a new migration: `python manage.py makemigrations`
+4. Apply migration: `python manage.py migrate`
+5. Login and add a new sensitive note
+6. Check the database in the terminal with `sqlite3 db.sqlite3` and query `SELECT sensitive_note FROM decks_profile;`
+7. **Result**: Sensitive note is now stored as encrypted binary data
 
 ---
 
@@ -190,9 +214,9 @@ Sensitive user notes are stored in plaintext in the database without any encrypt
 
 Search functionality uses unsafe string concatenation with user input in raw SQL queries.
 
-**Flaw 3**: [decks/views.py](decks/views.py#L262) - Raw SQL with unsanitized user input
+**Flaw 3**: Raw SQL with unsanitized user input - https://github.com/n-varoscic/Cyber-security-MOOC-project-I-StudyDeck/blob/9292f6a52da02520764ef6507e6c722903221c17/decks/views.py#L262
 
-**Fix 3**: [decks/views.py](decks/views.py#L273) - Use Django ORM or parameterized queries
+**Fix 3**: Use Django ORM or parameterized queries - https://github.com/n-varoscic/Cyber-security-MOOC-project-I-StudyDeck/blob/9292f6a52da02520764ef6507e6c722903221c17/decks/views.py#L273
 
 **Steps to test the flaw**:
 1. Go to Search page (`/search/`)
@@ -213,9 +237,9 @@ Search functionality uses unsafe string concatenation with user input in raw SQL
 
 Django settings expose sensitive information through debug mode and hard-coded secrets.
 
-**Flaw 4**: [studydeck/settings.py](studydeck/settings.py#L14) - `DEBUG=True`, `ALLOWED_HOSTS=['*']`, hardcoded `SECRET_KEY`
+**Flaw 4**: `DEBUG=True`, `ALLOWED_HOSTS=['*']`, hardcoded `SECRET_KEY` - https://github.com/n-varoscic/Cyber-security-MOOC-project-I-StudyDeck/blob/9292f6a52da02520764ef6507e6c722903221c17/studydeck/settings.py#L15
 
-**Fix 4**: [studydeck/settings.py](studydeck/settings.py#L17) - Load configuration from environment variables using `.env` file
+**Fix 4**: Load configuration from environment variables using `.env` file - https://github.com/n-varoscic/Cyber-security-MOOC-project-I-StudyDeck/blob/9292f6a52da02520764ef6507e6c722903221c17/studydeck/settings.py#L20
 
 **Steps to test the flaw**:
 1. Go to a non-existent page: `http://localhost:8000/invalid/`
@@ -236,9 +260,9 @@ Django settings expose sensitive information through debug mode and hard-coded s
 
 Failed login attempts are not logged, making brute force attacks undetectable.
 
-**Flaw 5**: [decks/views.py](decks/views.py#L45) - No logging in `login_view()` for failed authentication attempts
+**Flaw 5**: No logging in `login_view()` for failed authentication attempts - https://github.com/n-varoscic/Cyber-security-MOOC-project-I-StudyDeck/blob/9292f6a52da02520764ef6507e6c722903221c17/decks/views.py#L45
 
-**Fix 5**: [decks/views.py](decks/views.py#L50) - Log failed login attempts with `logger.warning()`
+**Fix 5**: Log failed login attempts with `logger.warning()` - https://github.com/n-varoscic/Cyber-security-MOOC-project-I-StudyDeck/blob/9292f6a52da02520764ef6507e6c722903221c17/decks/views.py#L51
 
 **Steps to test the flaw**:
 1. Go to login page
