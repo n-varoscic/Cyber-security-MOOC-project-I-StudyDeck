@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ deck.title }} - StudyDeck{% endblock %}
+
+{% block content %}
+<div class="warning-box">
+    ⚠️ <strong>WARNING:</strong> This application is INTENTIONALLY VULNERABLE for educational purposes only. Do not use in production!
+</div>
+
+<h2>{{ deck.title }}</h2>
+<p><strong>Subject:</strong> {{ deck.subject.name }}</p>
+
+<div style="margin-bottom: 2rem;">
+    <a href="{% url 'study_deck' deck.id %}" class="btn btn-success">📖 Study Mode</a>
+    <a href="{% url 'create_flashcard' deck.id %}" class="btn">Add Flashcard</a>
+    <a href="{% url 'deck_list' deck.subject.id %}" class="btn btn-info">Back</a>
+</div>
+
+{% if flashcards %}
+<div style="max-width: 100%; overflow-x: auto;">
+    <table>
+        <thead>
+            <tr>
+                <th>Question</th>
+                <th>Answer</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for card in flashcards %}
+            <tr>
+                <td>{{ card.question|truncatewords:10 }}</td>
+                <td>{{ card.answer|truncatewords:10 }}</td>
+                <td>
+                    <a href="{% url 'edit_flashcard' card.id %}" class="btn btn-warning">Edit</a>
+                    <a href="{% url 'delete_flashcard' card.id %}" class="btn btn-danger">Delete</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="card">
+    <p>No flashcards in this deck yet. <a href="{% url 'create_flashcard' deck.id %}">Create one</a></p>
+</div>
+{% endif %}
+{% endblock %}

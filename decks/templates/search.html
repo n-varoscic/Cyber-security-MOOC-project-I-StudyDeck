@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block title %}Search - StudyDeck{% endblock %}
+
+{% block content %}
+<h2>Search Flashcards</h2>
+
+<div class="form-container" style="max-width: 600px;">
+    <form method="get">
+        {{ form.as_p }}
+        <button type="submit" class="btn">Search</button>
+    </form>
+</div>
+
+{% if flashcards %}
+<h3>Search Results ({{ flashcards|length }} found)</h3>
+<table>
+    <thead>
+        <tr>
+            <th>Question</th>
+            <th>Answer</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for card in flashcards %}
+        <tr>
+            <td>{{ card.question|truncatewords:15 }}</td>
+            <td>{{ card.answer|truncatewords:15 }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% elif form.cleaned_data.query %}
+<p>No flashcards found matching your search.</p>
+{% endif %}
+
+<div class="warning-box" style="margin-top: 2rem;">
+    ⚠️ <strong>Security Note:</strong> This search feature is vulnerable to SQL injection. Try entering: <code>' OR '1'='1</code>
+</div>
+{% endblock %}

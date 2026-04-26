@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+
+{% block title %}Create Deck - StudyDeck{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <h2>Create New Deck</h2>
+    <p><small>Subject: {{ subject.name }}</small></p>
+    
+    <form method="post">
+        {% csrf_token %}
+        
+        {% for field in form %}
+        <div class="form-group">
+            {{ field.label_tag }}
+            {{ field }}
+            {% if field.errors %}
+            <ul class="errorlist">
+                {% for error in field.errors %}
+                <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+        </div>
+        {% endfor %}
+        
+        <button type="submit" class="btn">Create Deck</button>
+        <a href="{% url 'deck_list' subject.id %}" class="btn btn-secondary">Cancel</a>
+    </form>
+</div>
+{% endblock %}

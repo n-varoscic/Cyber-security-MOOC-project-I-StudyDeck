@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ subject.name }} - Decks - StudyDeck{% endblock %}
+
+{% block content %}
+<h2>{{ subject.name }}</h2>
+<p>{{ subject.description }}</p>
+
+<div style="margin-bottom: 2rem;">
+    <a href="{% url 'create_deck' subject.id %}" class="btn">Create New Deck</a>
+    <a href="{% url 'subjects' %}" class="btn btn-info">Back</a>
+</div>
+
+{% if decks %}
+<table>
+    <thead>
+        <tr>
+            <th>Title</th>
+            <th>Flashcards</th>
+            <th>Created</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for deck in decks %}
+        <tr>
+            <td>{{ deck.title }}</td>
+            <td>{{ deck.flashcards.count }}</td>
+            <td>{{ deck.created_at|date:"M d, Y" }}</td>
+            <td><a href="{% url 'view_deck' deck.id %}" class="btn">View</a></td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<div class="card">
+    <p>No decks in this subject yet. <a href="{% url 'create_deck' subject.id %}">Create one</a></p>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+
+{% block title %}Create Subject - StudyDeck{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <h2>Create New Subject</h2>
+    
+    <form method="post">
+        {% csrf_token %}
+        
+        {% for field in form %}
+        <div class="form-group">
+            {{ field.label_tag }}
+            {{ field }}
+            {% if field.errors %}
+            <ul class="errorlist">
+                {% for error in field.errors %}
+                <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+        </div>
+        {% endfor %}
+        
+        <button type="submit" class="btn">Create Subject</button>
+        <a href="{% url 'subjects' %}" class="btn btn-secondary">Cancel</a>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+{% block title %}Delete Flashcard - StudyDeck{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <h2>Delete Flashcard?</h2>
+    
+    <div class="card">
+        <p><strong>Question:</strong> {{ flashcard.question }}</p>
+        <p><strong>Answer:</strong> {{ flashcard.answer }}</p>
+        <p style="color: red; margin-top: 1rem;">This action cannot be undone.</p>
+    </div>
+    
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">Delete Flashcard</button>
+        <a href="{% url 'view_deck' flashcard.deck.id %}" class="btn btn-secondary">Cancel</a>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+
+{% block title %}Subjects - StudyDeck{% endblock %}
+
+{% block content %}
+<h2>Your Subjects</h2>
+
+<div style="margin-bottom: 2rem;">
+    <a href="{% url 'create_subject' %}" class="btn">Create New Subject</a>
+</div>
+
+{% if subjects %}
+<div class="grid">
+    {% for subject in subjects %}
+    <div class="card">
+        <h3>{{ subject.name }}</h3>
+        <p>{{ subject.description|truncatewords:20 }}</p>
+        <p><small>Created: {{ subject.created_at|date:"M d, Y" }}</small></p>
+        <p><small>{{ subject.decks.count }} decks</small></p>
+        <a href="{% url 'deck_list' subject.id %}" class="btn btn-secondary">View Decks</a>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="card">
+    <p>You haven't created any subjects yet. <a href="{% url 'create_subject' %}">Create one now</a></p>
+</div>
+{% endif %}
+{% endblock %}
