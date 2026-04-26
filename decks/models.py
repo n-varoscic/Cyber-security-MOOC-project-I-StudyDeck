@@ -1,11 +1,11 @@
+import os
 from django.db import models
 from django.contrib.auth.models import User
 from cryptography.fernet import Fernet
 
 # EDUCATIONAL NOTE: In production this key must come from an environment variable
 # and stay the same across restarts, otherwise encrypted data becomes unreadable.
-# Example: FERNET_KEY = os.environ.get('FERNET_KEY')
-FERNET_KEY = b'LncVivs03xmpnB-G9JWPElqux_YQnZhlVVNLdHLEWVY='
+FERNET_KEY = os.environ.get('FERNET_KEY', b'YOUR_FERNET_KEY_HERE')
 
 class Profile(models.Model):
     """User profile with intentional plaintext storage vulnerability."""
