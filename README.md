@@ -102,13 +102,39 @@ venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-### Step 4: Set Up Database
+### Step 4: Configure Environment Variables
+
+The project uses environment variables for secure configuration. You need to set these up:
+
+1. **Copy the example environment file:**
+   ```bash
+   cp .env.example .env
+   ```
+
+2. **Generate a FERNET_KEY for encryption (required for Fix 2):**
+   ```bash
+   python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
+   ```
+
+3. **Update your `.env` file** with the generated FERNET_KEY and a SECRET_KEY:
+   ```
+   DEBUG=False
+   ALLOWED_HOSTS=localhost,127.0.0.1
+   SECRET_KEY=your-random-50-character-secret-key-here
+   FERNET_KEY=paste-the-generated-key-here
+   ```
+   
+   **Important:** Both keys are required if you're testing the fixes:
+   - **SECRET_KEY**: Required for Fix 4 (Security Misconfiguration). Use any random 50+ character string.
+   - **FERNET_KEY**: Required for Fix 2 (Cryptographic Failures). Must be the generated key from step 2 above.
+
+### Step 5: Set Up Database
 
 ```bash
 python manage.py migrate
 ```
 
-### Step 5: Run Development Server
+### Step 6: Run Development Server
 
 ```bash
 python manage.py runserver
@@ -122,7 +148,7 @@ The application will be available at `http://localhost:8000/`
 
 ### Creating Demo Users
 
-You can create demo users through the web interface or use existing user credentials to log in:
+The following users were used for testing to acquire the screenshots in this project. To recreate the demonstrated vulnerabilities and test cases, **register both users with the credentials below** through the web interface, or create your own users.
 
 **User 1:**
 - Username: `alice`
@@ -133,6 +159,19 @@ You can create demo users through the web interface or use existing user credent
 - Username: `bob`
 - Password: `squarepants`
 - Email: `bob@gmail.com`
+
+### Creating Test Data
+
+After registering both users, **create at least one Deck with two Flashcards for each user** to properly test all vulnerabilities:
+
+1. **Login as alice:**
+   - Create a Subject (e.g., "Cybersecurity")
+   - Create a Deck under that Subject (e.g., "Vulnerabilities")
+   - Add 2 or more flashcards with questions and answers
+   - Add a note to the Profile page (for testing Flaw 2)
+
+2. **Logout and login as bob:**
+   - Repeat the above steps
 
 ---
 
@@ -180,17 +219,23 @@ Sensitive user notes are stored in plaintext in the database without any encrypt
 - https://github.com/n-varoscic/Cyber-security-MOOC-project-I-StudyDeck/blob/9292f6a52da02520764ef6507e6c722903221c17/decks/forms.py#L46
 - https://github.com/n-varoscic/Cyber-security-MOOC-project-I-StudyDeck/blob/9292f6a52da02520764ef6507e6c722903221c17/decks/forms.py#L55
 
-**Note on FERNET_KEY**: The encryption key is now loaded from the `FERNET_KEY` environment variable for security. For testing the fix, set this variable:
+**NOTE: FERNET_KEY Setup Required:**
 
-```bash
-# macOS/Linux
-export FERNET_KEY='YOUR_BASE64_ENCODED_KEY_HERE'
+The encryption for Fix 2 requires a valid `FERNET_KEY` environment variable. This should have been set in Step 4 when you created your `.env` file.
 
-# Windows (PowerShell)
-$env:FERNET_KEY='YOUR_BASE64_ENCODED_KEY_HERE'
-```
+**If you haven't done so yet:**
 
-You can generate a new key with: `python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key())"`
+1. Generate a key:
+   ```bash
+   python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
+   ```
+
+2. Add it to your `.env` file:
+   ```
+   FERNET_KEY=paste-your-generated-key-here
+   ```
+
+3. Restart the server for the changes to take effect.
 
 **Steps to test the flaw**:
 1. Login and go to Profile page
@@ -200,7 +245,7 @@ You can generate a new key with: `python -c "from cryptography.fernet import Fer
 5. **Result**: All sensitive notes visible in plaintext
 
 **Steps to test the fix**:
-1. Generate and set the FERNET_KEY environment variable (see note above)
+1. Make sure the FERNET_KEY is set in the .env file (see note above)
 2. Uncomment the fix 2 code
 3. Create a new migration: `python manage.py makemigrations`
 4. Apply migration: `python manage.py migrate`
@@ -247,12 +292,13 @@ Django settings expose sensitive information through debug mode and hard-coded s
 3. Check `settings.py` in repository: hardcoded `SECRET_KEY` is visible
 
 **Steps to test the fix**:
-1. Create a `.env` file in project root with secure values
-2. Uncomment the fix 4. code
-3. Comment out the vulnerable settings
-4. Set environment variables: `export DEBUG=False`
-5. Restart server and visit a non-existent page
-6. **Result**: Generic error page without sensitive information
+1. Make sure your `.env` file is set up (see Step 4: Configure Environment Variables)
+2. Ensure `DEBUG=False` is set in your `.env` file
+3. Uncomment the fix 4 code in `settings.py`
+4. Comment out the vulnerable settings (lines 16-18)
+5. Restart the server
+6. Visit a non-existent page: `http://localhost:8000/invalid/`
+7. **Result**: Generic error page without sensitive information (instead of Django debug page)
 
 ---
 
@@ -290,11 +336,6 @@ python manage.py runserver 8001
 ```bash
 rm db.sqlite3
 python manage.py migrate
-```
-
-**Static files missing?**
-```bash
-python manage.py collectstatic
 ```
 
 **Package installation fails?**
